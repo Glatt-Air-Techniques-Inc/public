@@ -192,6 +192,29 @@ virsh pool-start default
 virsh pool-autostart default
 }
 
+deploy2204 () {
+
+##intall additional packages
+apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
+apt install -y libguestfs-tools p7zip-full
+
+##install TailScale
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.gpg | sudo apt-key add -
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+apt update
+apt install -y tailscale
+apt install -y qrencode
+
+#update users
+adduser glatt libvirt 
+adduser glatt libvirt-qemu
+adduser glatt kvm
+
+#create default storage pool
+virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+virsh pool-start default
+virsh pool-autostart default
+}
 
 # check for root privilege ***********************************************************************************************************
 if [ "$(id -u)" != "0" ]; then
@@ -203,13 +226,20 @@ fi
 
 checkEnvironment
 
-if  [ $VER == "20.04" ];  then
+case $VER in
 
-	deploy2004
+  20.04)
+    deploy2004
+    ;;
 
-else
-	deploy1804
-fi
+  22.04)
+    deploy2204
+    ;;
+
+  *)
+    deploy1804
+    ;;
+esac
 
 #update path
 sudo -u glatt echo "export PATH=/usr/share/Deployment/scripts/:$PATH" | tee -a  .bashrc > /dev/null
