@@ -1,6 +1,7 @@
 #cloud-config
-autoinstall:
-  version: 1
+version: 1
+  refresh-installer:
+    update: yes
   interactive-sections:
    - network
   identity: {hostname: glatt-hypervisor, password: $6$YU3Y3YEliWyXPsx4$aQkemkd77dk96VHKraAx8SmRX4i1fDQwRzu537c9un82UgDeMFm0bprtEjxwIbzW1s7CPUGeyUnVA22yKaXmw.,
