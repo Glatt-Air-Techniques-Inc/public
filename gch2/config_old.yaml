@@ -23,7 +23,7 @@ refresh-installer:
           echo 'sdb exists, set up RAID1'
         else
           echo 'sdb does not exists, using default drive layout'
-          sed 's/#StorageStart.*#StorageEnd//'
+          sed -i '/^#StorageStart/,/^\#StorageEnd/{/^#StorageStart/!{/^\#StorageEnd/!d}}' /autoinstall.yaml
         fi
 #StorageStart
   storage:
