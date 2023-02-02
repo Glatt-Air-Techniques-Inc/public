@@ -1,0 +1,101 @@
+#cloud-config
+autoinstall:
+  version: 1
+  interactive-sections:
+   - network
+  identity: {hostname: glatt-hypervisor, password: $6$YU3Y3YEliWyXPsx4$aQkemkd77dk96VHKraAx8SmRX4i1fDQwRzu537c9un82UgDeMFm0bprtEjxwIbzW1s7CPUGeyUnVA22yKaXmw.,
+    realname: glatt, username: glatt}
+  keyboard: {layout: us, toggle: null, variant: ''}
+  locale: en_US.UTF-8
+  ssh:
+    allow-pw: true
+    authorized-keys: []
+    install-server: true
+  network:
+    renderer: NetworkManager
+    ethernets:
+      enp0s31f6:{dhcp4: true}
+    version: 2
+  early-commands:
+      - |
+        if [ -f /dev/sdb ]; then
+          echo 'sdb exists, set up RAID1'
+        else
+          echo 'sdb does not exists, using default drive layout'
+          sed 's/#StorageStart.*#StorageEnd//'
+        fi
+#StorageStart
+  storage:
+    config:
+#RaidStart
+     - id: sda
+       type: disk
+       ptable: gpt
+       path: /dev/sda
+       name: main_disk
+       grub_device: true
+       wipe: superblock-recursive
+     - id: bios_boot_a
+       type: partition
+       size: 1MB
+       device: sda
+       flag: bios_grub
+     - id: sda1
+       type: partition
+       size: -1
+       device: sda
+     - id: sdb
+       type: disk
+       ptable: gpt
+       path: /dev/sdb
+       name: second_disk
+       grub_device: true
+       wipe: superblock-recursive
+     - id: bios_boot_b
+       type: partition
+       size: 1MB
+       device: sdb
+       flag: bios_grub
+     - id: sdb1
+       type: partition
+       size: -1
+       device: sdb   
+     - id: mddevice
+       name: md0
+       type: raid
+       raidlevel: raid1
+       devices:
+         - sda1
+         - sdb1
+     - id: md_root
+       type: format
+       fstype: ext4
+       volume: mddevice
+     - id: md_mount
+       type: mount
+       path: /
+       device: md_root
+  #RaidEnd
+  #StorageEnd
+  packages: 
+    - cockpit
+    - cockpit-machines
+  late-commands:
+    - curl -o /target/usr/bin/setup https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/startup.sh
+    - chmod +x /target/usr/bin/setup
+  user-data: # Commands here run during first boot (cannot be interactive)
+
+    runcmd:
+        -|
+        #!/usr/bin/env bash
+        apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
+        apt install -y libguestfs-tools p7zip-full
+        virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+        virsh pool-start default
+        virsh pool-autostart default
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+        apt update
+        apt install -y tailscale
+        apt install -y qrencode
+    updates: security
