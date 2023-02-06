@@ -13,4 +13,5 @@ apt install -y cockpit-navigator.deb
 bash setup-repo.sh
 apt update
 apt install -y tailscale
+apt install -y cockpit-machines
 
