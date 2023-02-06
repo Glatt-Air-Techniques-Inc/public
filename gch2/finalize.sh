@@ -18,8 +18,8 @@ apt install -y xorg
 apt install -y xterm
 apt install -y nfs-common
 apt install -y ovmf
-apt install -ycifs-utils
+apt install -y cifs-utils
 apt install -y libguestfs-tools
-apt install -yp7zip-full
-apt install -yfirefox
+apt install -y p7zip-full
+apt install -y firefox
 
