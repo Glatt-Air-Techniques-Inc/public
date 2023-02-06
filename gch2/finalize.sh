@@ -14,4 +14,12 @@ bash setup-repo.sh
 apt update
 apt install -y tailscale
 apt install -y cockpit-machines
+apt install -y xorg
+apt install -y xterm
+apt install -y nfs-common
+apt install -y ovmf
+apt install -ycifs-utils
+apt install -y libguestfs-tools
+apt install -yp7zip-full
+apt install -yfirefox
 
