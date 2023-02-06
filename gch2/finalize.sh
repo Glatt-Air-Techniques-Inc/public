@@ -14,12 +14,3 @@ bash setup-repo.sh
 apt update
 apt install -y tailscale
 apt install -y ~/cockpit-navigator.deb
-apt install -y xorg
-apt install -y xterm
-apt install -y nfs-common
-apt install -y ovmf
-apt install -y cifs-utils
-apt install -y libguestfs-tools
-apt install -y p7zip-full
-apt install -y firefox
-
