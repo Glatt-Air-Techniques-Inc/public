@@ -14,3 +14,4 @@ bash setup-repo.sh
 apt update
 apt install -y tailscale
 apt install -y ./navigator_1_amd64.deb
+snap install firefox
