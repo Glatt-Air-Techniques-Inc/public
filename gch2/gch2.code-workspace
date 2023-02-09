@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../gch2"
+		},
+		{
+			"name": "public",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
