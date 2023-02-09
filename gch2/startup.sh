@@ -60,8 +60,13 @@ sudo cp /media/usb/glatt-tools*.deb /tmp/glatt-tools.deb
 sudo apt install -y /tmp/glatt-tools.deb
 sudo rm /tmp/glatt-tools.deb
 sudo umount /media/usb
-#install the GUI
-${BLOC}/${DeployRepo}/scripts/install-gui.sh
+  	read -p "Do you want to install the full GUI(N)" fullGUI
+	fullGUI=${fullGUI:-n}
+
+	if  [ "$fullGUI" == "y" ] || [ "$fullGUI" == "Y" ];  then
+        #install the GUI
+        ${BLOC}/${DeployRepo}/scripts/install-gui.sh
+    fi
 }
 
 
@@ -77,8 +82,13 @@ sudo rm /tmp/glatt-tools.deb
 
 unmountPAD
 
-#install the GUI
-${BLOC}/${DeployRepo}/scripts/install-gui.sh
+  	read -p "Do you want to install the full GUI(N)" fullGUI
+	fullGUI=${fullGUI:-n}
+
+	if  [ "$fullGUI" == "y" ] || [ "$fullGUI" == "Y" ];  then
+        #install the GUI
+        ${BLOC}/${DeployRepo}/scripts/install-gui.sh
+    fi
 
 }
 
@@ -195,25 +205,7 @@ virsh pool-autostart default
 deploy2204 () {
 
 ##intall additional packages
-apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
-apt install -y libguestfs-tools p7zip-full
 
-##install TailScale
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-apt update
-apt install -y tailscale
-apt install -y qrencode
-
-#update users
-adduser glatt libvirt 
-adduser glatt libvirt-qemu
-adduser glatt kvm
-
-#create default storage pool
-virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-virsh pool-start default
-virsh pool-autostart default
 }
 
 # check for root privilege ***********************************************************************************************************
