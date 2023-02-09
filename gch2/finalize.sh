@@ -3,7 +3,7 @@ virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
 virsh pool-start default
 virsh pool-autostart default
 curl -o /usr/bin/setup https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/startup.sh
-chmod +x /usr/bin/startup
+chmod +x /usr/bin/setup
 curl -o /usr/bin/gch https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/gch.sh
 chmod +x /usr/bin/gch
 curl -o /usr/bin/get-vagrant https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/get-vagrant.sh

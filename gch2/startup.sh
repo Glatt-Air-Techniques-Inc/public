@@ -205,7 +205,7 @@ virsh pool-autostart default
 deploy2204 () {
 
 ##intall additional packages
-
+echo "Setting up 22.04...."
 }
 
 # check for root privilege ***********************************************************************************************************
