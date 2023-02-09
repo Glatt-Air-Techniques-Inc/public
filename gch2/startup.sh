@@ -206,6 +206,16 @@ deploy2204 () {
 
 ##intall additional packages
 echo "Setting up 22.04...."
+#update users
+adduser glatt libvirt 
+adduser glatt libvirt-qemu
+adduser glatt kvm
+
+#create pool
+virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+virsh pool-start default
+virsh pool-autostart default
+
 }
 
 # check for root privilege ***********************************************************************************************************

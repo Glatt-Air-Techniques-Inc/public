@@ -1,7 +1,4 @@
 #!/bin/bash
-virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-virsh pool-start default
-virsh pool-autostart default
 curl -o /usr/bin/setup https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/startup.sh
 chmod +x /usr/bin/setup
 curl -o /usr/bin/gch https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/gch.sh
@@ -13,6 +10,13 @@ curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list
 wget https://github.com/Glatt-Air-Techniques-Inc/public/raw/master/navigator_1_amd64.deb
 apt install -y cockpit-navigator.deb
 bash setup-repo.sh
-apt update
-apt install -y tailscale
-apt install -y ./navigator_1_amd64.deb
+sudo apt update
+sudo apt install -y tailscale
+sudo apt install -y ./navigator_1_amd64.deb
+sudo virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+sudo virsh pool-start default
+sudo virsh pool-autostart default
+#update users
+sudo adduser glatt libvirt 
+sudo adduser glatt libvirt-qemu
+sudo adduser glatt kvm
