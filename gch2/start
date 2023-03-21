@@ -1,0 +1,3 @@
+#!/bin/bash
+sleep 5
+startx /usr/bin/remote-viewer --kiosk --kiosk-quit=on-disconnect spice://localhost:5900
