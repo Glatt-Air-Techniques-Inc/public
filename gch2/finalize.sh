@@ -13,6 +13,7 @@ wget https://github.com/Glatt-Air-Techniques-Inc/public/raw/master/navigator_1_a
 apt install -y cockpit-navigator.deb
 bash setup-repo.sh
 sudo apt update
+sudo apt install -y genisoimage
 sudo apt install -y tailscale
 sudo apt install -y ./navigator_1_amd64.deb
 sudo virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
