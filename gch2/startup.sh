@@ -59,6 +59,7 @@ mount /dev/sdc1 /media/usb
 sudo cp /media/usb/glatt-tools*.deb /tmp/glatt-tools.deb
 sudo apt install -y /tmp/glatt-tools.deb
 sudo rm /tmp/glatt-tools.deb
+sudo /usr/share/Deployment/scripts/smbsetup.sh
 sudo umount /media/usb
   	read -p "Do you want to install the full GUI(N)" fullGUI
 	fullGUI=${fullGUI:-n}
