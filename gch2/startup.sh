@@ -36,7 +36,9 @@ fi
 installGuiRemote () {
 
 
-sudo apt install -y --no-install-recommends ubuntu-desktop
+sudo apt install -y --no-install-recommends ubuntu-desktop  # change to ubuntu-desktop-minimal?
+sudo apt install -y ubuntu-fonts   # fix font issues relating to --no-install-recommends
+
 sudo apt install -y remmina firefox gedit nautilus-admin xrdp gnome-startup-applications gnome-tweaks p7zip 
 curl -L -o /tmp/teamviewer-host_amd64.deb https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb
 sudo apt install -y /tmp/teamviewer-host_amd64.deb
@@ -61,6 +63,7 @@ sudo apt install -y /tmp/glatt-tools.deb
 sudo rm /tmp/glatt-tools.deb
 sudo /usr/share/Deployment/scripts/smbsetup.sh
 sudo umount /media/usb
+
   	read -p "Do you want to install the full GUI(N)" fullGUI
 	fullGUI=${fullGUI:-n}
 
@@ -80,14 +83,15 @@ sudo cp /tmp/pad/${RepoPath}/glatt-tools*.deb /tmp/glatt-tools.deb
 sudo cp /tmp/pad/${RepoPath}/glatt-backup*.deb /tmp/glatt-backup.deb
 sudo apt install -y /tmp/glatt-tools.deb
 sudo rm /tmp/glatt-tools.deb
-sudo /usr/share/Deployment/scripts/smbsetup.sh
+sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
 unmountPAD
 
   	read -p "Do you want to install the full GUI(N)" fullGUI
 	fullGUI=${fullGUI:-n}
 
-	if  [ "$fullGUI" == "y" ] || [ "$fullGUI" == "Y" ];  then
+	if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
         #install the GUI
         ${BLOC}/${DeployRepo}/scripts/install-gui.sh
     fi
@@ -275,3 +279,6 @@ else
 		fi
 	fi
 fi
+
+# Remove setup warning
+sudo sed -i 's/setup_warning=1/setup_warning=0/g' '/home/glatt/.profile'

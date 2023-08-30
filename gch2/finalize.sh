@@ -17,6 +17,7 @@ sudo apt install -y ./navigator_1_amd64.deb
 sudo virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
 sudo virsh pool-start default
 sudo virsh pool-autostart default
+
 #update users
 sudo adduser glatt libvirt 
 sudo adduser glatt libvirt-qemu
@@ -39,8 +40,12 @@ EOF
 # setup netplan for NM
 netplan generate
 netplan apply
+
 # make sure NM is running
 systemctl enable NetworkManager.service
 systemctl restart NetworkManager.service
 
-echo 'Done!'
+# remove message-of-the-day advertisements
+sudo sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
+
+echo 'finalize.sh Done!'

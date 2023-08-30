@@ -1,0 +1,7 @@
+
+setup_warning=1
+if [ "$setup_warning" -eq "1" ]; then
+        echo "############"
+        echo "PLEASE RUN 'setup' TO FINISH HYPERVISOR INSTALLATION!"
+        echo "############
+fi
