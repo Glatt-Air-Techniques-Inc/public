@@ -47,5 +47,7 @@ systemctl restart NetworkManager.service
 
 # remove message-of-the-day advertisements
 sudo sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
+# add Please Run Setup warning
+curl https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/profile | sudo tee -a '/home/glatt/.profile'
 
 echo 'finalize.sh Done!'
