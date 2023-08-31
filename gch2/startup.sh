@@ -44,6 +44,7 @@ curl -L -o /tmp/teamviewer-host_amd64.deb https://download.teamviewer.com/downlo
 sudo apt install -y /tmp/teamviewer-host_amd64.deb
 rm -f /tmp/teamviewer-host_amd64.deb
 
+[ -d /sys/firmware/efi ] && echo UEFI || echo BIOS
 
 read -p "Enter a Teamviewer password" tvpass
 
@@ -64,10 +65,11 @@ sudo rm /tmp/glatt-tools.deb
 sudo /usr/share/Deployment/scripts/smbsetup.sh
 sudo umount /media/usb
 
-  	read -p "Do you want to install the full GUI(N)" fullGUI
+  	read -p "Do you want to install the full GUI(y/N)" fullGUI
 	fullGUI=${fullGUI:-n}
 
-	if  [ "$fullGUI" == "y" ] || [ "$fullGUI" == "Y" ];  then
+	if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
         #install the GUI
         ${BLOC}/${DeployRepo}/scripts/install-gui.sh
     fi
@@ -87,7 +89,7 @@ sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
 unmountPAD
 
-  	read -p "Do you want to install the full GUI(N)" fullGUI
+  	read -p "Do you want to install the full GUI(y/N)" fullGUI
 	fullGUI=${fullGUI:-n}
 
 	if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
