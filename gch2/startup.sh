@@ -1,5 +1,7 @@
 #!/bin/bash
 
+gch2_pub_git='https://raw.githubusercontent.com/Glatt-Air-Techniques-Inc/public/master/gch2/'
+tailscale_repo='https://pkgs.tailscale.com/stable/ubuntu/'
 
 SPLocation="https://organization.glatt.com/ptpA/sw/gat/Documents/Deployment/"
 
@@ -9,224 +11,230 @@ DeployPath="PAD-Development/GIT"
 DeployRepo="Deployment"
 RepoPath="PAD-Development/deb_repo"
 BLOC="/usr/share"
-#
 
-#define functions *************************************************************
+
+# Define functions
+
+
 getCredentials () {
-
-if [ "$username" == "" ]; then
-if [[ $graphical == "true" ]]; 
-then
-username=$(zenity --entry --text="Enter your Glatt username (email address)");
-password=$(zenity --password --text="Enter your password" );
-else
-	echo "************************************************"
-	echo "******Please enter your Glatt credentials.******"
-	echo "************************************************"
-	echo
-	echo
-	read -p "Enter your username (email address): " username
-	read -s -p "Enter your password: " password
-	echo
-	fi
-fi
-
+    if [ "$username" == "" ]; then
+    if [[ $graphical == "true" ]]; 
+    then
+    username=$(zenity --entry --text="Enter your Glatt username (email address)");
+    password=$(zenity --password --text="Enter your password" );
+    else
+        echo "************************************************"
+        echo "******Please enter your Glatt credentials.******"
+        echo "************************************************"
+        echo
+        echo
+        read -p "Enter your username (email address): " username
+        read -s -p "Enter your password: " password
+        echo
+        fi
+    fi
 }
+
 
 installGuiRemote () {
-
-
-sudo apt install -y --no-install-recommends ubuntu-desktop  # change to ubuntu-desktop-minimal?
-sudo apt install -y ubuntu-fonts   # fix font issues relating to --no-install-recommends
-
-sudo apt install -y remmina firefox gedit nautilus-admin xrdp gnome-startup-applications gnome-tweaks p7zip 
-curl -L -o /tmp/teamviewer-host_amd64.deb https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb
-sudo apt install -y /tmp/teamviewer-host_amd64.deb
-rm -f /tmp/teamviewer-host_amd64.deb
-
-[ -d /sys/firmware/efi ] && echo UEFI || echo BIOS
-
-read -p "Enter a Teamviewer password" tvpass
-
-sudo teamviewer passwd $tvpass
-reboot
-
+    # Package installs
+    # change to ubuntu-desktop-minimal?
+    sudo apt install -y --no-install-recommends ubuntu-desktop  
+    sudo apt install -y ubuntu-fonts   # fix font issues relating to --no-install-recommends
+    sudo apt install -y remmina firefox gedit nautilus-admin xrdp \
+    gnome-startup-applications gnome-tweaks p7zip 
+    # Teamviewer
+    curl -L -o /tmp/teamviewer-host_amd64.deb \
+    https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb
+    sudo apt install -y /tmp/teamviewer-host_amd64.deb
+    rm -f /tmp/teamviewer-host_amd64.deb
+    read -rp $'Enter a Teamviewer password:\n' tvpass
+    sudo teamviewer passwd $tvpass
+    reboot
 }
+
 
 getDeployRem () {
+    read -p "Please insert a USB flash drive containing the Glatt-Tools.deb file" resp
+    sudo mkdir /media/usb
+    mount /dev/sdc1 /media/usb
 
-read -p "Please insert a USB flash drive containing the Glatt-Tools.deb file" resp
-sudo mkdir /media/usb
-mount /dev/sdc1 /media/usb
+    sudo cp /media/usb/glatt-tools*.deb /tmp/glatt-tools.deb
+    sudo apt install -y /tmp/glatt-tools.deb
+    sudo rm /tmp/glatt-tools.deb
+    sudo /usr/share/Deployment/scripts/smbsetup.sh
+    sudo umount /media/usb
 
-sudo cp /media/usb/glatt-tools*.deb /tmp/glatt-tools.deb
-sudo apt install -y /tmp/glatt-tools.deb
-sudo rm /tmp/glatt-tools.deb
-sudo /usr/share/Deployment/scripts/smbsetup.sh
-sudo umount /media/usb
+        read -p "Do you want to install the full GUI(y/N)" fullGUI
+        fullGUI=${fullGUI:-n}
 
-  	read -p "Do you want to install the full GUI(y/N)" fullGUI
-	fullGUI=${fullGUI:-n}
-
-	if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
-    then
-        #install the GUI
-        ${BLOC}/${DeployRepo}/scripts/install-gui.sh
-    fi
+        if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
+        then
+            #install the GUI
+            ${BLOC}/${DeployRepo}/scripts/install-gui.sh
+        fi
 }
 
 
-getDeployLoc () {
- 
-getCredentials
-mountPAD
+getDeployLoc() {
+    getCredentials
+    mountPAD
 
-sudo cp /tmp/pad/${RepoPath}/glatt-tools*.deb /tmp/glatt-tools.deb
-sudo cp /tmp/pad/${RepoPath}/glatt-backup*.deb /tmp/glatt-backup.deb
-sudo apt install -y /tmp/glatt-tools.deb
-sudo rm /tmp/glatt-tools.deb
-sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
+    sudo cp /tmp/pad/${RepoPath}/glatt-tools*.deb /tmp/glatt-tools.deb
+    sudo cp /tmp/pad/${RepoPath}/glatt-backup*.deb /tmp/glatt-backup.deb
+    sudo apt install -y /tmp/glatt-tools.deb
+    sudo rm /tmp/glatt-tools.deb
+    sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
-unmountPAD
+    unmountPAD
 
-  	read -p "Do you want to install the full GUI(y/N)" fullGUI
-	fullGUI=${fullGUI:-n}
+        read -p "Do you want to install the full GUI(y/N)" fullGUI
+        fullGUI=${fullGUI:-n}
 
-	if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
-    then
-        #install the GUI
-        ${BLOC}/${DeployRepo}/scripts/install-gui.sh
-    fi
-
+        if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
+        then
+            #install the GUI
+            ${BLOC}/${DeployRepo}/scripts/install-gui.sh
+        fi
 }
 
-unmountPAD () {
-umount /tmp/pad
+
+unmountPAD() {
+    umount /tmp/pad
 }
+
 
 mountPAD () {
+    read -p "Enter shared folder name: (//${LocalServer}/${LocalPath})" padpath
+            padpath=${padpath:-//${LocalServer}/${LocalPath}}
+            mkdir /tmp/pad
+            umount /tmp/pad
 
-read -p "Enter shared folder name: (//${LocalServer}/${LocalPath})" padpath
-		padpath=${padpath:-//${LocalServer}/${LocalPath}}
-		mkdir /tmp/pad
-		umount /tmp/pad
-
-mountstring="username=${username},password=${password} ${padpath} /tmp/pad"
-sudo mount -t cifs -o $mountstring
+    mountstring="username=${username},password=${password} ${padpath} /tmp/pad"
+    sudo mount -t cifs -o $mountstring
 }
+
 
 checkEnvironment () {
+    if [ -f /etc/os-release ]; then
+        # freedesktop.org and systemd
+        . /etc/os-release
+        OS=$NAME
+        VER=$VERSION_ID
+    elif type lsb_release >/dev/null 2>&1; then
+        # linuxbase.org
+        OS=$(lsb_release -si)
+        VER=$(lsb_release -sr)
+    elif [ -f /etc/lsb-release ]; then
+        # For some versions of Debian/Ubuntu without lsb_release command
+        . /etc/lsb-release
+        OS=$DISTRIB_ID
+        VER=$DISTRIB_RELEASE
+    elif [ -f /etc/debian_version ]; then
+        # Older Debian/Ubuntu/etc.
+        OS=Debian
+        VER=$(cat /etc/debian_version)
+    elif [ -f /etc/SuSe-release ]; then
+        # Older SuSE/etc.
+        ...
+    elif [ -f /etc/redhat-release ]; then
+        # Older Red Hat, CentOS, etc.
+        ...
+    else
+        # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
+        OS=$(uname -s)
+        VER=$(uname -r)
+    fi
 
-if [ -f /etc/os-release ]; then
-    # freedesktop.org and systemd
-    . /etc/os-release
-    OS=$NAME
-    VER=$VERSION_ID
-elif type lsb_release >/dev/null 2>&1; then
-    # linuxbase.org
-    OS=$(lsb_release -si)
-    VER=$(lsb_release -sr)
-elif [ -f /etc/lsb-release ]; then
-    # For some versions of Debian/Ubuntu without lsb_release command
-    . /etc/lsb-release
-    OS=$DISTRIB_ID
-    VER=$DISTRIB_RELEASE
-elif [ -f /etc/debian_version ]; then
-    # Older Debian/Ubuntu/etc.
-    OS=Debian
-    VER=$(cat /etc/debian_version)
-elif [ -f /etc/SuSe-release ]; then
-    # Older SuSE/etc.
-    ...
-elif [ -f /etc/redhat-release ]; then
-    # Older Red Hat, CentOS, etc.
-    ...
-else
-    # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-    OS=$(uname -s)
-    VER=$(uname -r)
-fi
-
-echo $OS
-echo $VER
+    echo $OS
+    echo $VER
 }
+
 
 deploy1804 () {
+    ##intall additional packages
+    apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
+    apt install -y -t bionic-backports cockpit cockpit-bridge cockpit-dashboard \
+    cockpit-docker cockpit-machines cockpit-networkmanager cockpit-storaged \
+    cockpit-system cockpit-ws libguestfs-tools p7zip-full
 
-##intall additional packages
-apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
-apt install -y -t bionic-backports cockpit cockpit-bridge cockpit-dashboard cockpit-docker cockpit-machines cockpit-networkmanager cockpit-storaged cockpit-system cockpit-ws libguestfs-tools p7zip-full
+    ##install TailScale
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.gpg | sudo apt-key add -
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    apt update
+    apt install -y tailscale
+    apt install -y qrencode
 
-##install TailScale
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.gpg | sudo apt-key add -
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/bionic.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-apt update
-apt install -y tailscale
-apt install -y qrencode
+    #update users
+    adduser glatt libvirt 
+    adduser glatt libvirt-qemu
+    adduser glatt kvm
 
-#update users
-adduser glatt libvirt 
-adduser glatt libvirt-qemu
-adduser glatt kvm
+    #create default storage pool
+    virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+    virsh pool-start default
+    virsh pool-autostart default
+    }
 
-#create default storage pool
-virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-virsh pool-start default
-virsh pool-autostart default
-}
 
 deploy2004 () {
-sudo rm /etc/netplan/00-installer-config.yaml
-sudo curl -o /etc/netplan/00-installer-config.yaml https://raw.githubusercontent.com/djcloutier/gch/master/00-installer-config.yaml
+    sudo rm /etc/netplan/00-installer-config.yaml
+    sudo curl -o /etc/netplan/00-installer-config.yaml "${gch2_pub_git}00-installer-config.yaml"
 
-##intall additional packages
-apt update
-apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
-apt install -y cockpit cockpit-bridge cockpit-dashboard cockpit-machines cockpit-networkmanager cockpit-storaged cockpit-system cockpit-ws libguestfs-tools p7zip-full
+    # Install additional packages
+    apt update
+    apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
+    apt install -y cockpit cockpit-bridge cockpit-dashboard cockpit-machines \
+    cockpit-networkmanager cockpit-storaged cockpit-system cockpit-ws \
+    libguestfs-tools p7zip-full
 
-##add docker
-sudo apt install -y docker.io
-sudo usermod -aG docker glatt
-#newgrp docker
-wget https://launchpad.net/ubuntu/+source/cockpit/215-1~ubuntu19.10.1/+build/18889196/+files/cockpit-docker_215-1~ubuntu19.10.1_all.deb
-apt install -y ./cockpit-docker_215-1~ubuntu19.10.1_all.deb
-rm -f ./cockpit-docker_215-1~ubuntu19.10.1_all.deb
+    # Add docker
+    sudo apt install -y docker.io
+    sudo usermod -aG docker glatt
+    # Newgrp docker
+    # ?
+    wget 'https://launchpad.net/ubuntu/+source/cockpit/215-1~ubuntu19.10.1'\
+    '/+build/18889196/+files/cockpit-docker_215-1~ubuntu19.10.1_all.deb'
+    apt install -y ./cockpit-docker_215-1~ubuntu19.10.1_all.deb
+    rm -f ./cockpit-docker_215-1~ubuntu19.10.1_all.deb
 
-##install TailScale
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.gpg | sudo apt-key add -
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-apt update
-apt install -y tailscale
-apt install -y qrencode
+    # Install TailScale
+    curl -fsSL "${tailscale_repo}focal.gpg" | sudo apt-key add -
+    curl -fsSL "${tailscale_repo}focal.list" | sudo tee /etc/apt/sources.list.d/tailscale.list
+    apt update
+    apt install -y tailscale
+    apt install -y qrencode
 
-#update users
-adduser glatt libvirt 
-adduser glatt libvirt-qemu
-adduser glatt kvm
+    # Update users
+    adduser glatt libvirt 
+    adduser glatt libvirt-qemu
+    adduser glatt kvm
 
-#create default storage pool
-virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-virsh pool-start default
-virsh pool-autostart default
+    # Create default storage pool
+    virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+    virsh pool-start default
+    virsh pool-autostart default
 }
+
 
 deploy2204 () {
+    # Install additional packages
+    echo "Setting up 22.04...."
+    # Update users
+    adduser glatt libvirt 
+    adduser glatt libvirt-qemu
+    adduser glatt kvm
 
-##intall additional packages
-echo "Setting up 22.04...."
-#update users
-adduser glatt libvirt 
-adduser glatt libvirt-qemu
-adduser glatt kvm
-
-#create pool
-virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-virsh pool-start default
-virsh pool-autostart default
-
+    # Create pool
+    virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
+    virsh pool-start default
+    virsh pool-autostart default
 }
 
-# check for root privilege ***********************************************************************************************************
+
+# MAIN
+
+# check for root privilege
 if [ "$(id -u)" != "0" ]; then
    echo " this script must be run as root"
    echo
@@ -237,7 +245,6 @@ fi
 checkEnvironment
 
 case $VER in
-
   20.04)
     deploy2004
     ;;
@@ -251,28 +258,31 @@ case $VER in
     ;;
 esac
 
-#update path
+# Update path
 sudo -u glatt echo "export PATH=/usr/share/Deployment/scripts/:$PATH" | tee -a  .bashrc > /dev/null
 
-#see if user is inside GAT
+# See if user is inside GAT
 if ping -c 1 ${LocalServer} &> /dev/null
 then
   	getDeployLoc
 else
-  	read -p "I can't reach the file server. Are you connected to the Glatt network?(Y)" locGAT
+  	read -p "can't reach the file server. Are you connected to the Glatt network?(Y)" locGAT
 	locGat=${locGAT:-y}
 
-	if  [ "$locGAT" == "y" ];  then
+	if  [[ "$locGAT" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
 		getDeployLoc
 	else
-	read -p "Are you a Glatt customer?(y)" cust
-	cust=${cust:-y}
-		if  [ "$cust" == "y" ];  then
+        read -p "Are you a Glatt customer?(y)" cust
+        cust=${cust:-y}
+		if  [[ "$cust" =~ ^([yY][eE][sS]|[yY])$ ]]
+        then
 			getDeployRem
 		else
 			read -p "Do you want to start tailscale for VPN access?(n)" tscale
 			tscale=${tscale:-n}
-			if  [ "$tscale" == "y" ];  then
+			if  [[ "$tscale" =~ ^([yY][eE][sS]|[yY])$ ]]
+            then
 				sudo tailscale up --qr --accept-routes --advertise-tags=tag:customer,tag:hypervisor
 				getDeployLoc
 			else
