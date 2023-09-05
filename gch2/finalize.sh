@@ -33,6 +33,9 @@ sudo adduser glatt libvirt
 sudo adduser glatt libvirt-qemu
 sudo adduser glatt kvm
 
+# Add 'Please Run Setup' warning
+curl "${gch2_pub_git}profile" | sudo tee -a '/home/glatt/.profile'
+
 # Networking
 # backup existing yaml file
 echo 'Changing netplan to NetworkManager on all interfaces'
@@ -55,9 +58,6 @@ systemctl restart NetworkManager.service
 
 # Remove message-of-the-day advertisements
 sudo sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
-
-# Add 'Please Run Setup' warning
-curl "${gch2_pub_git}profile" | sudo tee -a '/home/glatt/.profile'
 
 # Set hostname to unique name
 machine_id=$(cat /etc/machine-id | tail -c 8)
