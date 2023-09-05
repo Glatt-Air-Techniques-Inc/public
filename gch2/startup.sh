@@ -16,7 +16,8 @@ BLOC="/usr/share"
 # Define functions
 
 
-getCredentials () {
+# Get user SMB credentials
+get_credentials () {
     if [ "$username" == "" ]; then
     if [[ $graphical == "true" ]]; 
     then
@@ -36,7 +37,8 @@ getCredentials () {
 }
 
 
-installGuiRemote () {
+# NOT USED
+install_gui_remote () {
     # Package installs
     sudo apt install -y ubuntu-install-minimal gnome-initial-setup- remote-viewer-
     sudo apt install -y remmina nautilus-admin xrdp gnome-tweaks p7zip virt-manager
@@ -51,7 +53,8 @@ installGuiRemote () {
 }
 
 
-getDeployRem () {
+# Get Glatt-Tools and install Deployment folder from remote network
+get_deploy_remote () {
     read -p "Please insert a USB flash drive containing the Glatt-Tools.deb file" resp
     sudo mkdir /media/usb
     mount /dev/sdc1 /media/usb
@@ -73,9 +76,10 @@ getDeployRem () {
 }
 
 
-getDeployLoc() {
-    getCredentials
-    mountPAD
+# Get Glatt-Tools and install Deployment folder from local GAT network
+get_deploy_local() {
+    get_credentials
+    mount_pad
 
     sudo cp /tmp/pad/${RepoPath}/glatt-tools*.deb /tmp/glatt-tools.deb
     sudo cp /tmp/pad/${RepoPath}/glatt-backup*.deb /tmp/glatt-backup.deb
@@ -83,7 +87,7 @@ getDeployLoc() {
     sudo rm /tmp/glatt-tools.deb
     sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
-    unmountPAD
+    unmount_pad
 
         read -p "Do you want to install the full GUI(y/N)" fullGUI
         fullGUI=${fullGUI:-n}
@@ -96,12 +100,14 @@ getDeployLoc() {
 }
 
 
-unmountPAD() {
+# Unmount PAD Samba share
+unmount_pad() {
     umount /tmp/pad
 }
 
 
-mountPAD () {
+# Mount PAD Samba share
+mount_pad () {
     read -p "Enter shared folder name: (//${LocalServer}/${LocalPath})" padpath
             padpath=${padpath:-//${LocalServer}/${LocalPath}}
             mkdir /tmp/pad
@@ -112,6 +118,7 @@ mountPAD () {
 }
 
 
+# Confirm Linux environment. Sets OS and VER global vars
 checkEnvironment () {
     if [ -f /etc/os-release ]; then
         # freedesktop.org and systemd
@@ -148,7 +155,8 @@ checkEnvironment () {
 }
 
 
-deploy1804 () {
+# Installs for Ubuntu 18.04
+deploy_1804 () {
     ##intall additional packages
     apt install -y nfs-common sshpass openssh-server ovmf cifs-utils
     apt install -y -t bionic-backports cockpit cockpit-bridge cockpit-dashboard \
@@ -174,7 +182,8 @@ deploy1804 () {
     }
 
 
-deploy2004 () {
+# Installs for Ubuntu 20.04
+deploy_2004 () {
     sudo rm /etc/netplan/00-installer-config.yaml
     sudo curl -o /etc/netplan/00-installer-config.yaml "${gch2_pub_git}00-installer-config.yaml"
 
@@ -214,7 +223,8 @@ deploy2004 () {
 }
 
 
-deploy2204 () {
+# Installs for Ubuntu 22.04
+deploy_2204 () {
     # Install additional packages
     echo "Setting up 22.04...."
     # Update users
@@ -229,7 +239,27 @@ deploy2204 () {
 }
 
 
-# MAIN
+# Update hostname (manually or automatically)
+update_hostname() {
+    read -p "Change hostname now?(y/N)" change_hostname
+    change_hostname=${change_hostname:-n}
+    if  [[ "$change_hostname" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+        while [[ $new_hostname == '' ]] # While string is different or empty...
+        do
+            echo 'Please enter a valid hostname.'
+            read -p "hostname: " new_hostname # Ask the user to enter a string
+        done 
+
+        sudo hostnamectl set-hostname $new_hostname
+        echo -n '(NEW)'; hostnamectl | grep "Static hostname:"
+        echo 'Restart for changes to take effect!'
+    fi
+}
+
+
+# -- MAIN
+
 
 # check for root privilege
 if [ "$(id -u)" != "0" ]; then
@@ -243,15 +273,15 @@ checkEnvironment
 
 case $VER in
   20.04)
-    deploy2004
+    deploy_2004
     ;;
 
   22.04)
-    deploy2204
+    deploy_2204
     ;;
 
   *)
-    deploy1804
+    deploy_1804
     ;;
 esac
 
@@ -261,33 +291,36 @@ sudo -u glatt echo "export PATH=/usr/share/Deployment/scripts/:$PATH" | tee -a  
 # See if user is inside GAT
 if ping -c 1 ${LocalServer} &> /dev/null
 then
-  	getDeployLoc
+  	get_deploy_local
 else
-  	read -p "can't reach the file server. Are you connected to the Glatt network?(Y)" locGAT
+  	read -p "can't reach the file server. Are you connected to the Glatt network?(Y/n)" locGAT
 	locGat=${locGAT:-y}
 
 	if  [[ "$locGAT" =~ ^([yY][eE][sS]|[yY])$ ]]
     then
-		getDeployLoc
+		get_deploy_local
 	else
-        read -p "Are you a Glatt customer?(y)" cust
+        read -p "Are you a Glatt customer?(Y/n)" cust
         cust=${cust:-y}
 		if  [[ "$cust" =~ ^([yY][eE][sS]|[yY])$ ]]
         then
-			getDeployRem
+			get_deploy_remote
 		else
-			read -p "Do you want to start tailscale for VPN access?(n)" tscale
+			read -p "Do you want to start tailscale for VPN access?(y/N)" tscale
 			tscale=${tscale:-n}
 			if  [[ "$tscale" =~ ^([yY][eE][sS]|[yY])$ ]]
             then
 				sudo tailscale up --qr --accept-routes --advertise-tags=tag:customer,tag:hypervisor
-				getDeployLoc
+				get_deploy_local
 			else
-				getDeployRem
+				get_deploy_remote
 			fi
 		fi
 	fi
 fi
 
-# Remove setup warning
+# update hostname if user chooses to
+update_hostname
+
+# Remove setup warning (that was created in finalize.sh)
 sudo sed -i 's/setup_warning=1/setup_warning=0/g' '/home/glatt/.profile'

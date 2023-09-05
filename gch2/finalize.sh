@@ -59,4 +59,9 @@ sudo sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
 # Add 'Please Run Setup' warning
 curl "${gch2_pub_git}profile" | sudo tee -a '/home/glatt/.profile'
 
+# Set hostname to unique name
+machine_id=$(cat /etc/machine-id | tail -c 8)
+sudo hostnamectl set-hostname "glatt-hypervisor-${machine_id}"
+echo -n '(NEW)'; hostnamectl | grep "Static hostname:"
+
 echo 'finalize.sh Done!'
