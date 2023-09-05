@@ -38,11 +38,8 @@ getCredentials () {
 
 installGuiRemote () {
     # Package installs
-    # change to ubuntu-desktop-minimal?
-    sudo apt install -y --no-install-recommends ubuntu-desktop  
-    sudo apt install -y ubuntu-fonts   # fix font issues relating to --no-install-recommends
-    sudo apt install -y remmina firefox gedit nautilus-admin xrdp \
-    gnome-startup-applications gnome-tweaks p7zip 
+    sudo apt install -y ubuntu-install-minimal gnome-initial-setup- remote-viewer-
+    sudo apt install -y remmina nautilus-admin xrdp gnome-tweaks p7zip virt-manager
     # Teamviewer
     curl -L -o /tmp/teamviewer-host_amd64.deb \
     https://download.teamviewer.com/download/linux/teamviewer-host_amd64.deb
