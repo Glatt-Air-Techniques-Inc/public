@@ -263,10 +263,10 @@ update_hostname() {
 
 # check for root privilege
 if [ "$(id -u)" != "0" ]; then
-   echo " this script must be run as root"
-   echo
-   sudo "$0" "$@"
-   exit $?
+   echo "SETUP FAILED! This script must be run as root."
+   echo "Please prepend 'sudo' to command, like below:"
+   echo "sudo ${0} ${@}"
+   exit 126   # exit code: permissions issue
 fi
 
 checkEnvironment
