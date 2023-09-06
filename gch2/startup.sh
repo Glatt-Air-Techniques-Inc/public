@@ -12,6 +12,8 @@ DeployRepo="Deployment"
 RepoPath="PAD-Development/deb_repo"
 BLOC="/usr/share"
 
+gui_installed=0
+
 
 # Define functions
 
@@ -40,7 +42,7 @@ get_credentials () {
 # NOT USED
 install_gui_remote () {
     # Package installs
-    sudo apt install -y ubuntu-install-minimal gnome-initial-setup- remote-viewer-
+    sudo apt install -y ubuntu-desktop-minimal gnome-initial-setup- remote-viewer-
     sudo apt install -y remmina nautilus-admin xrdp gnome-tweaks p7zip virt-manager
     # Teamviewer
     curl -L -o /tmp/teamviewer-host_amd64.deb \
@@ -71,7 +73,8 @@ get_deploy_remote () {
         if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
         then
             #install the GUI
-            ${BLOC}/${DeployRepo}/scripts/install-gui.sh
+            sudo ${BLOC}/${DeployRepo}/scripts/install-gui.sh --in-script
+            gui_installed=1
         fi
 }
 
@@ -85,18 +88,20 @@ get_deploy_local() {
     sudo cp /tmp/pad/${RepoPath}/glatt-backup*.deb /tmp/glatt-backup.deb
     sudo apt install -y /tmp/glatt-tools.deb
     sudo rm /tmp/glatt-tools.deb
+    sudo chmod +x ${BLOC}/${DeployRepo}/scripts/*.sh
     sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
     unmount_pad
 
-        read -p "Do you want to install the full GUI(y/N)" fullGUI
-        fullGUI=${fullGUI:-n}
+    read -p "Do you want to install the full GUI(y/N)" fullGUI
+    fullGUI=${fullGUI:-n}
 
-        if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
-        then
-            #install the GUI
-            ${BLOC}/${DeployRepo}/scripts/install-gui.sh
-        fi
+    if [[ "$fullGUI" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+        #install the GUI
+        sudo ${BLOC}/${DeployRepo}/scripts/install-gui.sh --in-script
+        gui_installed=1
+    fi
 }
 
 
@@ -109,9 +114,9 @@ unmount_pad() {
 # Mount PAD Samba share
 mount_pad () {
     read -p "Enter shared folder name: (//${LocalServer}/${LocalPath})" padpath
-            padpath=${padpath:-//${LocalServer}/${LocalPath}}
-            mkdir /tmp/pad
-            umount /tmp/pad
+    padpath=${padpath:-//${LocalServer}/${LocalPath}}
+    mkdir /tmp/pad
+    umount /tmp/pad
 
     mountstring="username=${username},password=${password} ${padpath} /tmp/pad"
     sudo mount -t cifs -o $mountstring
@@ -227,19 +232,10 @@ deploy_2004 () {
 deploy_2204 () {
     # Install additional packages
     echo "Setting up 22.04...."
-    # Update users
-    adduser glatt libvirt 
-    adduser glatt libvirt-qemu
-    adduser glatt kvm
-
-    # Create pool
-    virsh pool-define-as default dir - - - - "/var/lib/libvirt/images"
-    virsh pool-start default
-    virsh pool-autostart default
 }
 
 
-# Update hostname (manually or automatically)
+# Update hostname (manually)
 update_hostname() {
     read -p "Change hostname now?(y/N)" change_hostname
     change_hostname=${change_hostname:-n}
@@ -251,7 +247,8 @@ update_hostname() {
             read -p "hostname: " new_hostname # Ask the user to enter a string
         done 
 
-        sudo hostnamectl set-hostname $new_hostname
+        sudo hostnamectl set-hostname $new_hostname    # set hostname
+        echo 127.0.0.1 localhost $(hostname) | sudo tee -a /etc/hosts   # add to hosts
         echo -n '(NEW)'; hostnamectl | grep "Static hostname:"
         echo 'Restart for changes to take effect!'
     fi
@@ -322,5 +319,11 @@ fi
 # update hostname if user chooses to
 update_hostname
 
+sudo touch /etc/cloud/cloud-init.disabled   # disable cloud-init
+
 # Remove setup warning (that was created in finalize.sh)
 sudo sed -i 's/setup_warning=1/setup_warning=0/g' '/home/glatt/.profile'
+
+if [$gui_installed -eq 1]; then
+    reboot
+fi

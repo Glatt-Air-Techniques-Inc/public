@@ -61,7 +61,8 @@ sudo sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
 
 # Set hostname to unique name
 machine_id=$(cat /etc/machine-id | tail -c 8)
-sudo hostnamectl set-hostname "glatt-hypervisor-${machine_id}"
+sudo hostnamectl set-hostname "glatt-hypervisor-${machine_id}"   # set hostname
+echo 127.0.0.1 localhost $(hostname) | sudo tee -a /etc/hosts   # add to hosts
 echo -n '(NEW)'; hostnamectl | grep "Static hostname:"
 
 echo 'finalize.sh Done!'
