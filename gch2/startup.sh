@@ -324,6 +324,6 @@ sudo touch /etc/cloud/cloud-init.disabled   # disable cloud-init
 # Remove setup warning (that was created in finalize.sh)
 sudo sed -i 's/setup_warning=1/setup_warning=0/g' '/home/glatt/.profile'
 
-if [$gui_installed -eq 1]; then
+if $gui_installed -eq 1; then
     reboot
 fi
