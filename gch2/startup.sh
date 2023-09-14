@@ -266,6 +266,9 @@ if [ "$(id -u)" != "0" ]; then
    exit 126   # exit code: permissions issue
 fi
 
+# disable "Which services should be restarted?" prompt from apt installs
+sudo sed -i "s/#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
+
 checkEnvironment
 
 case $VER in
