@@ -12,7 +12,7 @@ DeployRepo="Deployment"
 RepoPath="PAD-Development/deb_repo"
 BLOC="/usr/share"
 
-gui_installed=0
+gui_installed=false
 
 
 # Define functions
@@ -74,7 +74,7 @@ get_deploy_remote () {
         then
             #install the GUI
             sudo ${BLOC}/${DeployRepo}/scripts/install-gui.sh --in-script
-            gui_installed=1
+            gui_installed=true
         fi
 }
 
@@ -100,7 +100,7 @@ get_deploy_local() {
     then
         #install the GUI
         sudo ${BLOC}/${DeployRepo}/scripts/install-gui.sh --in-script
-        gui_installed=1
+        gui_installed=true
     fi
 }
 
@@ -327,6 +327,9 @@ sudo touch /etc/cloud/cloud-init.disabled   # disable cloud-init
 # Remove setup warning (that was created in finalize.sh)
 sudo sed -i 's/setup_warning=1/setup_warning=0/g' '/home/glatt/.profile'
 
-if $gui_installed -eq 1; then
+# fix customer terminal
+sudo chsh -s /bin/bash customer
+
+if [ "$gui_installed" = true ]; then
     reboot
 fi
