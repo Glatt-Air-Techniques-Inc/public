@@ -89,6 +89,7 @@ get_deploy_local() {
     sudo apt install -y /tmp/glatt-tools.deb
     sudo rm /tmp/glatt-tools.deb
     sudo chmod +x ${BLOC}/${DeployRepo}/scripts/*.sh
+    sudo chmod +x /usr/sbin/glatt*
     sudo ${BLOC}/${DeployRepo}/scripts/smbsetup.sh
 
     unmount_pad
