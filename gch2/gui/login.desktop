@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/glatt/.login.sh
+Hidden=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+Name[en_US]=login
+Name=login
+Comment[en_US]=deletes after running
+Comment=deletes after running
