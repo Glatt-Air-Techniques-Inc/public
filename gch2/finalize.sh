@@ -65,4 +65,8 @@ sudo hostnamectl set-hostname "glatt-hypervisor-${machine_id}"   # set hostname
 echo 127.0.0.1 localhost $(hostname) | sudo tee -a /etc/hosts   # add to hosts
 echo -n '(NEW)'; hostnamectl | grep "Static hostname:"
 
+# Disable waiting for network at system boot
+sudo systemctl disable systemd-networkd-wait-online.service
+sudo systemctl mask systemd-networkd-wait-online.service
+
 echo 'finalize.sh Done!'
